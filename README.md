@@ -7,12 +7,12 @@ I got tired of people not including progress tracking metrics
 ```
 import ProgressBar as ProgressBar
 
-\[...\]  
+[...]  
 
 pb = ProgressBar(n)
 for i in range(1,n):
     pb.CheckProgress()
-    \[do complicated stuff\]
+    [do complicated stuff]
  ```
  
  ## If you want to customize the output
