@@ -61,6 +61,9 @@ class ProgressBar:
         #increment iterator    
         self.currentIter += 1 
         
+        #TODO - create subpercentages
+        #TODO - change time display format to show min/hr if longer than 60s        
+        
         #if a percentage mark is hit
         if self.currentIter % self.percent == 0:
             self.currentPercent += 1;
@@ -77,10 +80,12 @@ class ProgressBar:
 
                 #Check if enough time has elapsed since last estimation print.
                 if t_now - self.lastEstimated > self.timeDisplayInterval:
+
                     #Calculate and display remaining time
                     ahead = (100-self.currentPercent)*(t_now - self.t_start) / \
                                 self.currentPercent
-                    print('Time Remaining: %f seconds' % ahead,end='')
+                    time_remaining_string = self._generate_time_string(ahead);
+                    print('Estimated Time Remaining: %s' % time_remaining_string,end='')
                     
                     #update estimation timestamp
                     self.lastEstimated = t_now
@@ -116,10 +121,31 @@ class ProgressBar:
             winsound.Beep(frequency_G, duration*2)
         return
 
-
+    '''Private:'''
+     #format it into a h:m:s format
+    def _generate_time_string(self,time):
+        #seconds is always a fractional value, therefore it is 
+        #always plural
+        time_string = '%.2f seconds'%(time%60)
+        if time%3600 >= 60:
+            if time%3600 < 120:
+                time_string ='%d minunte '%((time/60)%60) \
+                                    + time_string
+            else:
+                time_string ='%d minuntes '%((time/60)%60) \
+                                    + time_string
+                                    
+        if time>=3600:
+            if time<7200:
+                time_string = '%d hour '%(time/3600)  \
+                                    + time_string
+            else:
+                time_string = '%d hour '%(time/3600)  \
+                                    + time_string
+        return time_string
 
 if __name__ == "__main__":
-    n = 30000;
+    n = 20000;
     pb = ProgressBar(n,skipPercent=1);
     for i in range(1,n):
         k=0;
