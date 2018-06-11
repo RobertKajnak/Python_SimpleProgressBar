@@ -26,9 +26,9 @@ class ProgressBar:
             'micro' - microwave style beep-beep-beep
             'tune'  - a melody ('Kicsi kutya tarka')
             'auto'  - Selects sound based on estimated task duration at 1%:
-                        <10s       => bip
-                        [10s,60s)  => beep
-                        [60s,5min) => micro
+                        <30s       => bip
+                        [30s,2min) => beep
+                        [2mins,5min)=> micro
                         >=5min     => tune
             anyting else => silent
             You can use playTune() to check out what tune sounds like
