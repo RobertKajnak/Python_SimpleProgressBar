@@ -1,4 +1,5 @@
-# Python_SimpleProgressBar
+# A simple Progress Bar for Python
+## Motivation behind it
 If you need a two-liner to track the progress of any application where the number of total iterations is known  
 
 I got tired of people not including progress tracking metrics  
@@ -14,7 +15,7 @@ for i in range(1,n):
     pb.CheckProgress()
     [do complicated stuff]
  ```
-**You can also run the file itself to see a short demo**
+*You can also run the file itself to see a short demo*
   
   
   
@@ -23,22 +24,22 @@ for i in range(1,n):
  print the time estimation at most every 10 seconds  
 
  ## Summary of parameters on class instantiation
-  ### Required
-    - **totalIterationCount** -- the total number of expected iterations
+  ### Required  
+  - **totalIterationCount** The total number of expected iterations
   ### Optional
-    - **percentageDisplayInterval** -- the minumum amount of time between two print statements. Expressed in seconds. Default = **2**. If 1% of the works takes 0.2 seconds to complete, then 1%,6%,11% etc. will be printed
-    - **timeRemainingDisplayInterval** -- the minumum number of seconds elapsed between display remaining time. Expressed in seconds. Default = **10**
-    - **sound** -- Play a sound when 100% is reached. **ONLY works on MS Windows** Support for other OSs may be coming in future versions
-        - 'off'  - no sound played
-        - 'bip'   - a short beep
-        - 'bup'   - a short beep, two octaves lower than bip
-        - 'beep'  - a longer beep
-        - **'micro'** - microwave stile beep-beep-beep
-        - 'tune'  - a melody ('Kicsi kutya tarka')
-        - anyting else => silent
-    - **skipPercent** -- the pecentage that are displayed. Takes priority over time estimate
-        - **1**   -> display every percentage
-        - 10  -> display 10%,20%...
+  - **percentageDisplayInterval** The minumum amount of time between two print statements. Expressed in seconds. Default = **2**. If 1% of the works takes 0.2 seconds to complete, then 1%,6%,11% etc. will be printed
+  - **timeRemainingDisplayInterval** The minumum number of seconds elapsed between display remaining time. Expressed in seconds. Default = **10**
+  - **sound** Play a sound when 100% is reached. **ONLY works on MS Windows** Support for other OSs may be coming in future versions
+     - 'off'  - no sound played
+     - 'bip'   - a short beep
+     - 'bup'   - a short beep, two octaves lower than bip
+     - 'beep'  - a longer beep
+     - **'micro'** - microwave style beep-beep-beep
+     - 'tune'  - a melody ('Kicsi kutya tarka')
+     - anyting else => silent
+  - **skipPercent** The pecentage that are displayed. Takes priority over time estimate
+     - **1**   -> display every percentage
+     - 10  -> display 10%,20%...
  
  ## Documentation  
  Standard python documentation has been included for the class and functions  
