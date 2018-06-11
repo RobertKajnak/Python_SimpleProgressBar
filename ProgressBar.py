@@ -18,14 +18,20 @@ class ProgressBar:
             statements. Expressed in seconds
     timeRemainingDisplayInterval -- the minumum number of seconds elapsed between
             display remaining time. Expressed in seconds
-    sound -- Play a sound when 100% is reached
-            'off'  - no sound played
+    sound -- Play a sound when 100% is reached. **ONLY works on MS Windows**
+            'off'   - no sound played
             'bip'   - a short beep
             'bup'   - a short beep, two octaves lower than bip
             'beep'  - a longer beep
-            'micro' - microwave stile beep-beep-beep
+            'micro' - microwave style beep-beep-beep
             'tune'  - a melody ('Kicsi kutya tarka')
+            'auto'  - Selects sound based on estimated task duration at 1%:
+                        <10s       => bip
+                        [10s,60s)  => beep
+                        [60s,5min) => micro
+                        >5min      => tune
             anyting else => silent
+            You can use playTune() to check out what tune sounds like
     skipPercent -- the pecentage that are displayed. Takes priority over time 
                    estimate
             1   -> display every percentage
@@ -38,11 +44,11 @@ class ProgressBar:
     except:
         isSound= False;
         
-    valid_sounds = ['bip','bup','beep','micro','tune']
+    valid_sounds = ['bip','bup','beep','micro','tune','auto']
     
     
     def __init__(self,totalIterationCount,percentageDisplayInterval=2,
-                 timeRemainingDisplayInterval=10, sound='micro', skipPercent=1):
+                 timeRemainingDisplayInterval=10, sound='auto', skipPercent=1):
 
         if totalIterationCount<1:
             raise ValueError('The number of iterations can not be <=0')
@@ -105,6 +111,15 @@ class ProgressBar:
                     
                     #update estimation timestamp
                     self.lastEstimated = t_now
+                if self.sound=='auto':
+                    if ahead<10: #bip
+                        self.sound = self.valid_sounds[0]
+                    elif ahead<60: #beep
+                        self.sound = self.valid_sounds[2]
+                    elif ahead<300: #micro
+                        self.sound = self.valid_sounds[3]
+                    else:           #tune
+                        self.sound = self.valid_sounds[4]
                 
                 
         if self.currentIter == self.n-1:
@@ -169,7 +184,7 @@ class ProgressBar:
                         ('c',1),('e',1),('c',1),('e',1),('g',2),('g',2),
                         (13, 1),('b',1),('a',1),('g',1),('f',2),('a',2),
                         ('g',1),('f',1),('e',1),('d',1),('c',2),('c',2)]
-                ,tempo=180)
+                ,tempo=200)
             
         return
 
@@ -198,13 +213,14 @@ class ProgressBar:
         return time_string
 
 if __name__ == "__main__":
-    n = 20000;
+    n = 10000;
     #using default parameters
     pb = ProgressBar(n);
     for i in range(1,n):
+        pb.checkProgress();
+        
         k=0;
         for j in range(1,n):
             k=k+1;
         
-        pb.checkProgress();
         
