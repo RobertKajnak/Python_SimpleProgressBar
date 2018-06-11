@@ -37,11 +37,11 @@ for i in range(1,n):
      - 'micro' - microwave style beep-beep-beep
      - 'tune'  - a melody ('Kicsi kutya tarka')
      - **'auto'**    - Selects sound based on estimated task duration at 1%:
-         <10s       => bip
-         [10s,60s)  => beep
-         [60s,5min) => micro
-         >5min      => tune
-     - anyting else => silent
+         - \<10s       => bip  
+         - [10s,60s)  => beep  
+         - [60s,5min) => micro  
+         - \>5min      => tune  
+      - anyting else => silent
 	 You can use pb.playTune() to check out what tune sounds like
   - **skipPercent** The pecentage that are displayed. Takes priority over time estimate
      - **1**   -> display every percentage
