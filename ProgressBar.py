@@ -13,22 +13,23 @@ class ProgressBar:
     ''' Initializes the progress bar. Should be called directly before the loop
     
     totalIterationCount -- the total number of expected iterations
-    skipPercent -- the pecentage that are displayed:
-            <=0 -> calculated based on time
-            1   -> display every percentage
-            10  -> display 10%,20%...
+    
     percentageDisplayInterval -- the minumum amount of time between two print
             statements. Expressed in seconds
     timeRemainingDisplayInterval -- the minumum number of seconds elapsed between
             display remaining time. Expressed in seconds
     sound -- Play a sound when 100% is reached
-            'none'  - no sound played
+            'off'  - no sound played
             'bip'   - a short beep
             'bup'   - a short beep, two octaves lower than bip
             'beep'  - a longer beep
             'micro' - microwave stile beep-beep-beep
             'tune'  - a melody ('Kicsi kutya tarka')
-        anyting else => silent
+            anyting else => silent
+    skipPercent -- the pecentage that are displayed. Takes priority over time 
+                   estimate
+            1   -> display every percentage
+            10  -> display 10%,20%...
             '''
     try:
         import winsound
@@ -39,20 +40,24 @@ class ProgressBar:
         
     valid_sounds = ['bip','bup','beep','micro','tune']
     
-    def __init__(self,totalIterationCount,sound='tune',percentageDisplayInterval=2,
-                 timeRemainingDisplayInterval=10, skipPercent=1):
+    
+    def __init__(self,totalIterationCount,percentageDisplayInterval=2,
+                 timeRemainingDisplayInterval=10, sound='micro', skipPercent=1):
 
-        self.sound = sound
-        self.n = totalIterationCount        
+        if totalIterationCount<1:
+            raise ValueError('The number of iterations can not be <=0')
+        self.n = totalIterationCount  
     
         self.currentIter = 0
         self.currentPercent = 0
         
         self.percent = self.n/100
-        self.skipPercent = skipPercent
+        self.skipPercent = skipPercent if skipPercent>0 else 1
         
         self.timeDisplayInterval = timeRemainingDisplayInterval
         self.percentageDisplayInterval = percentageDisplayInterval
+                
+        self.sound = sound
 
     def checkProgress(self):
         '''Call this function on each iteration. It only prints when necessary
@@ -105,7 +110,6 @@ class ProgressBar:
         if self.currentIter == self.n-1:
             print('\n100% - Finished!')
             self.playTune()
-    
 
     def _play(self,sheet,octave=4,tempo=80):
         ''' Plays the "sheet music" provided at a certain tempo
@@ -194,8 +198,9 @@ class ProgressBar:
         return time_string
 
 if __name__ == "__main__":
-    n = 2000;
-    pb = ProgressBar(n,sound='tune');
+    n = 20000;
+    #using default parameters
+    pb = ProgressBar(n);
     for i in range(1,n):
         k=0;
         for j in range(1,n):
@@ -203,11 +208,3 @@ if __name__ == "__main__":
         
         pb.checkProgress();
         
-        
-        '''if i%100==0:
-            print('\n%d%% '%(i/100),end='')
-        if i%10==0 and i%100!=0:
-            print('#',end='')
-    if i==9999:
-        print('\n100% - Finished!')
-    playTune();'''
