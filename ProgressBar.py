@@ -29,7 +29,7 @@ class ProgressBar:
                         <10s       => bip
                         [10s,60s)  => beep
                         [60s,5min) => micro
-                        >5min      => tune
+                        >=5min     => tune
             anyting else => silent
             You can use playTune() to check out what tune sounds like
     skipPercent -- the pecentage that are displayed. Takes priority over time 
@@ -85,6 +85,7 @@ class ProgressBar:
         self.currentIter += 1 
         
         #TODO - create subpercentages     
+		#TODO - add check for processes that have 1%<10s print time
         
         #if a percentage mark is hit
         if self.currentIter % self.percent == 0:
@@ -112,11 +113,11 @@ class ProgressBar:
                     #update estimation timestamp
                     self.lastEstimated = t_now
                 if self.sound=='auto':
-                    if ahead<10: #bip
+                    if ahead<30: #bip
                         self.sound = self.valid_sounds[0]
-                    elif ahead<60: #beep
+                    elif ahead<120: #beep
                         self.sound = self.valid_sounds[2]
-                    elif ahead<300: #micro
+                    elif ahead<480: #micro
                         self.sound = self.valid_sounds[3]
                     else:           #tune
                         self.sound = self.valid_sounds[4]
