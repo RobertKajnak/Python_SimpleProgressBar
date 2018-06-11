@@ -20,7 +20,16 @@ for i in range(1,n):
  print the percentage at most every 2 seconds  
  print the time estimation at most every 10 seconds  
 
-The description of the parameters can be found in the file, before the \_\_init\_\_ function  
+ ##Documentation  
+ Standard python documentation has been included for the class and functions  
+To check the details about the parameters use  
+```
+#Check class parameters
+print(ProgressBar.__doc__)
+
+#Check the parameters of a function
+print(ProgressBar.checkProgress.__doc__)
+```
  
  
- **subpercentages coming soon  **
+ *subpercentages coming soon*

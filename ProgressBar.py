@@ -7,18 +7,11 @@ Created on Mon Jun 11 10:59:03 2018
 from __future__ import print_function
 import time
 
-try:
-    import winsound
-    isSound = True;
-except:
-    isSound= False;
-        
+
 
 class ProgressBar:
-    duration = 500;
-    freq_base = 1;
+    ''' Initializes the progress bar. Should be called directly before the loop
     
-    '''
     totalIterationCount -- the total number of expected iterations
     skipPercent -- the pecentage that are displayed:
             <=0 -> calculated based on time
@@ -28,10 +21,28 @@ class ProgressBar:
             statements. Expressed in seconds
     timeRemainingDisplayInterval -- the minumum number of seconds elapsed between
             display remaining time. Expressed in seconds
-    '''
-    def __init__(self,totalIterationCount,sound='none',percentageDisplayInterval=2,
+    sound -- Play a sound when 100% is reached
+            'none'  - no sound played
+            'bip'   - a short beep
+            'bup'   - a short beep, two octaves lower than bip
+            'beep'  - a longer beep
+            'micro' - microwave stile beep-beep-beep
+            'tune'  - a melody ('Kicsi kutya tarka')
+        anyting else => silent
+            '''
+    try:
+        import winsound
+        def _play_freq(self,freq,duration): self.winsound.Beep(freq,duration)
+        isSound = True;
+    except:
+        isSound= False;
+        
+    valid_sounds = ['bip','bup','beep','micro','tune']
+    
+    def __init__(self,totalIterationCount,sound='tune',percentageDisplayInterval=2,
                  timeRemainingDisplayInterval=10, skipPercent=1):
-        self.isSound = sound
+
+        self.sound = sound
         self.n = totalIterationCount        
     
         self.currentIter = 0
@@ -42,11 +53,12 @@ class ProgressBar:
         
         self.timeDisplayInterval = timeRemainingDisplayInterval
         self.percentageDisplayInterval = percentageDisplayInterval
-    '''
-    Call this function on each iteration. It only prints when necessary
-    
-    '''
+
     def checkProgress(self):
+        '''Call this function on each iteration. It only prints when necessary
+        
+        The internal iterator is incremented automatically.
+        '''
         #Use the same time across the function to avoid potential discrepancies
         t_now = time.clock();
         
@@ -61,8 +73,7 @@ class ProgressBar:
         #increment iterator    
         self.currentIter += 1 
         
-        #TODO - create subpercentages
-        #TODO - change time display format to show min/hr if longer than 60s        
+        #TODO - create subpercentages     
         
         #if a percentage mark is hit
         if self.currentIter % self.percent == 0:
@@ -95,35 +106,73 @@ class ProgressBar:
             print('\n100% - Finished!')
             self.playTune()
     
-    '''
-    If you want to check the current set tune
-    '''
+
+    def _play(self,sheet,octave=4,tempo=80):
+        ''' Plays the "sheet music" provided at a certain tempo
+        
+        octave is an offset addded to notes (440Hz is A in octave 4). Max=9
+        sheet = an array of (note,duration) tuplets
+            note: Can be specified either as a string e.g. 'C', 'c','c#' etc.
+                    or as a number. If a digit is specified after the character, 
+                    it overrides the octave settings, e.g. C#2 or D2 will 
+                    always be in the second octave
+                If this is specified as a digit:
+                    0=rest; 1=C, 2=C#, 3=D; -1=B from previous octave, 13=C 
+                    from next octave
+                Feel free to mix the two formats e.g. notes=[(1,2),('C#',1/2)]
+            duration: 1 unit is equal to 1/4 in the specified tempo
+            tempo: specified in BPM
+        '''
+        notes = {'C':1,'C#':2,'Db':2,'D':3,'D#':4,'Eb':4,'E':5,'F':6,'F#':7,
+                 'Gb':7,'G':8,'G#':9,'Ab':9,'A':10,'A#':11,'Bb':11,'Hb':11,
+                 'B':12,'H':12}
+        octave_base = octave
+        for note in sheet:
+            #convert to int if string format provided
+            if type(note[0])==str:
+                try:
+                    octave = int(note[0][-1])
+                    note_lit = note[0][:-1]                    
+                except:
+                    octave = octave_base
+                    note_lit = note[0]
+                note = (notes[note_lit.upper()],note[1])
+            duration = int(note[1]*1000*60/tempo);
+            if note[0]==0:
+                time.sleep(duration/1000.0)
+            else:
+                self._play_freq(int(2**((octave*12+note[0]-58)/12.0)*440),
+                              duration)    
+    
+
     def playTune(self):
+        ''' If you want to check the tune currently set'''
+    
         #If sound is not supported or not requested
-        if not isSound:
+        if not self.isSound or self.sound not in self.valid_sounds:
             return;
+        
+        if self.sound=='bip':
+            self._play([(9,1)],6,160) #A_6
+        if self.sound=='bup':   
+            self._play([(9,1)],4,160) #A_4
+        if self.sound=='beep':
+            self._play([(9,1)],6,tempo=65);
+        if self.sound=='micro':
+            self._play([(9,1),(0,1/2),(9,1),(0,1/2),(9,1)],6,63)
+        if self.sound=='tune':
+            self._play([('c',1),('e',1),('c',1),('e',1),('g',2),('g',2),
+                        ('c',1),('e',1),('c',1),('e',1),('g',2),('g',2),
+                        (13, 1),('b',1),('a',1),('g',1),('f',2),('a',2),
+                        ('g',1),('f',1),('e',1),('d',1),('c',2),('c',2)]
+                ,tempo=180)
             
-        duration = self.duration;
-        if isSound=='beep':
-            freq_beep = self.freq_base * 440
-            winsound.Beep(freq_beep, duration)
-            
-        if isSound=='melody':
-            frequency_E = 660
-            frequency_C = 513
-            frequency_G = 783
-            winsound.Beep(frequency_C, duration)
-            winsound.Beep(frequency_E, duration)
-            winsound.Beep(frequency_C, duration)
-            winsound.Beep(frequency_E, duration)
-            winsound.Beep(frequency_G, duration*2)
-            time.sleep(duration/10.0)
-            winsound.Beep(frequency_G, duration*2)
         return
 
+
     '''Private:'''
-     #format it into a h:m:s format
     def _generate_time_string(self,time):
+        '''format it into a h:m:s format'''
         #seconds is always a fractional value, therefore it is 
         #always plural
         time_string = '%.2f seconds'%(time%60)
@@ -145,8 +194,8 @@ class ProgressBar:
         return time_string
 
 if __name__ == "__main__":
-    n = 20000;
-    pb = ProgressBar(n,skipPercent=1);
+    n = 2000;
+    pb = ProgressBar(n,sound='tune');
     for i in range(1,n):
         k=0;
         for j in range(1,n):
