@@ -27,8 +27,7 @@ for i in range(1,n):
   ### Required  
   - **totalIterationCount** The total number of expected iterations
   ### Optional
-  - **percentageDisplayInterval** The minumum amount of time between two print statements. Expressed in seconds. Default = **2**. If 1% of the works takes 0.2 seconds to complete, then 1%,6%,11% etc. will be printed
-  - **timeRemainingDisplayInterval** The minumum number of seconds elapsed between display remaining time. Expressed in seconds. Default = **10**
+  - **displayInterval** The minumum amount of time between two print statements. Expressed in seconds. Default = **2**. If 1% of the works takes 0.2 seconds to complete, then 1%,6%,11% etc. will be printed
   - **sound** Play a sound when 100% is reached. **ONLY works on MS Windows** Support for other OSs may be coming in future versions
      - 'off'  - no sound played
      - 'bip'   - a short beep
@@ -43,6 +42,10 @@ for i in range(1,n):
          - \>=8min     => tune  
       - anyting else => silent
 	 You can use pb.playTune() to check out what tune sounds like
+     - emoji -- The type of emoji that will be displayed
+         - 'ascii' - to be sure it works on older consoles
+         - **'kao'**   - full faces using UTF-8 characters
+         - 'off'   - less emotional, more professional
   - **skipPercent** The pecentage that are displayed. Takes priority over time estimate
      - **1**   -> display every percentage
      - 10  -> display 10%,20%...
@@ -58,5 +61,3 @@ print(ProgressBar.__doc__)
 print(ProgressBar.checkProgress.__doc__)
 ```
  
- 
- *subpercentages coming soon*

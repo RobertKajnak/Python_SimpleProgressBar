@@ -14,10 +14,8 @@ class ProgressBar:
     
     totalIterationCount -- the total number of expected iterations
     
-    percentageDisplayInterval -- the minumum amount of time between two print
+    displayInterval -- the minumum amount of time between two print
             statements. Expressed in seconds
-    timeRemainingDisplayInterval -- the minumum number of seconds elapsed between
-            display remaining time. Expressed in seconds
     sound -- Play a sound when 100% is reached. **ONLY works on MS Windows**
             'off'   - no sound played
             'bip'   - a short beep
@@ -32,6 +30,10 @@ class ProgressBar:
                         >=5min     => tune
             anyting else => silent
             You can use playTune() to check out what tune sounds like
+    emoji -- The type of emoji that will be displayed
+            'ascii' - to be sure it works on older consoles
+            'kao'   - full faces using UTF-8 characters
+            'off'   - less emotional, more professional
     skipPercent -- the pecentage that are displayed. Takes priority over time 
                    estimate
             1   -> display every percentage
@@ -45,10 +47,12 @@ class ProgressBar:
         isSound= False;
         
     valid_sounds = ['bip','bup','beep','micro','tune','auto']
+    emojis={'ascii':[':(',':|',':)',':D','\m/(^.^)\m/'],
+            'kao':['(╯_╰)',	'(￣.￣)','(─‿‿─)','＼(￣▽￣)／','☆*:.｡o(≧▽≦)o｡.:*☆']}
     
     
-    def __init__(self,totalIterationCount,percentageDisplayInterval=2,
-                 timeRemainingDisplayInterval=10, sound='auto', skipPercent=1):
+    def __init__(self,totalIterationCount, displayInterval=2,
+                      sound='auto', emoji='kao', skipPercent=1):
 
         if totalIterationCount<1:
             raise ValueError('The number of iterations can not be <=0')
@@ -60,10 +64,11 @@ class ProgressBar:
         self.percent = self.n/100
         self.skipPercent = skipPercent if skipPercent>0 else 1
         
-        self.timeDisplayInterval = timeRemainingDisplayInterval
-        self.percentageDisplayInterval = percentageDisplayInterval
+        self.displayInterval = displayInterval
                 
         self.sound = sound
+        
+        self.emoji = emoji
 
     def checkProgress(self):
         '''Call this function on each iteration. It only prints when necessary
@@ -75,11 +80,10 @@ class ProgressBar:
         
         #Set starting time        
         if self.currentIter==0:
-            print('Initializing Variables, calculating time estimate',end='')   
+            print('Initializing Variables, calculating time estimate',end='\n')   
             self.t_start = t_now
             #The estimation will be guaranteed on first percent
-            self.lastEstimated = -self.timeDisplayInterval
-            self.lastDisplayed = -self.percentageDisplayInterval
+            self.lastDisplayed = -self.displayInterval
             
         #increment iterator    
         self.currentIter += 1 
@@ -95,37 +99,55 @@ class ProgressBar:
             if self.currentPercent % self.skipPercent == 0:
                 
                 #check if enough time has passed since last precentage  print
-                if t_now - self.lastDisplayed > self.percentageDisplayInterval:
+                if t_now - self.lastDisplayed > self.displayInterval:
                     #print precentage
-                    print('\n%d%% '%(self.currentPercent),end='')
+                    self._erase_prev_output()
+                    print('\r%d%% complete. '%(self.currentPercent),end='')
                     #update time
                     self.lastDisplayed = t_now
-
-                #Check if enough time has elapsed since last estimation print.
-                if t_now - self.lastEstimated > self.timeDisplayInterval:
 
                     #Calculate and display remaining time
                     ahead = (100-self.currentPercent)*(t_now - self.t_start) / \
                                 self.currentPercent
                     time_remaining_string = self._generate_time_string(ahead);
-                    print('Estimated Time Remaining: %s' % time_remaining_string,end='')
-                    
-                    #update estimation timestamp
-                    self.lastEstimated = t_now
+                    print('Estimated time remaining: %s ' % time_remaining_string,end='')
+                    self._print_emoji()
+                            
+
                 if self.sound=='auto':
-                    if ahead<30: #bip
-                        self.sound = self.valid_sounds[0]
-                    elif ahead<120: #beep
-                        self.sound = self.valid_sounds[2]
-                    elif ahead<480: #micro
-                        self.sound = self.valid_sounds[3]
-                    else:           #tune
-                        self.sound = self.valid_sounds[4]
+                    self._set_best_sound(ahead);
                 
                 
         if self.currentIter == self.n-1:
-            print('\n100% - Finished!')
+            time_it_took = self._generate_time_string(t_now-self.t_start)
+            self._erase_prev_output()
+            print('\r100%% -- Finished!',end='')
+            self._print_emoji(True)
+            print(' The process took %s '% time_it_took)
             self.playTune()
+            
+    def _erase_prev_output(self):
+        for i in range(1,50):
+            print('\b \b',end='')
+            
+    def _print_emoji(self,isComplete=False):
+        '''Prints the appropriate emoji for the percentage'''
+        if self.emoji in self.emojis:
+            if not isComplete:
+                print(self.emojis[self.emoji][int(self.currentPercent/25)],end='')
+            else:
+                print(self.emojis[self.emoji][-1],end='')
+
+    def _set_best_sound(self,ahead):
+        '''Selects appropriate sound profile based on remaining time'''
+        if ahead<30: #bip
+            self.sound = self.valid_sounds[0]
+        elif ahead<120: #beep
+            self.sound = self.valid_sounds[2]
+        elif ahead<480: #micro
+            self.sound = self.valid_sounds[3]
+        else:           #tune
+            self.sound = self.valid_sounds[4]
 
     def _play(self,sheet,octave=4,tempo=80):
         ''' Plays the "sheet music" provided at a certain tempo
@@ -214,7 +236,7 @@ class ProgressBar:
         return time_string
 
 if __name__ == "__main__":
-    n = 10000;
+    n = 12000;
     #using default parameters
     pb = ProgressBar(n);
     for i in range(1,n):
