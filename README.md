@@ -42,7 +42,7 @@ for i in range(1,n):
          - \>=8min     =\> tune  
       - anyting else => silent
 	 You can use pb.playTune() to check out what tune sounds like
-     - **emoji** -- The type of emoji that will be displayed
+  - **emoji** -- The type of emoji that will be displayed  
          - 'ascii' - to be sure it works on older consoles
          - **'kao'**   - full faces using UTF-8 characters
          - 'off'   - less emotional, more professional
