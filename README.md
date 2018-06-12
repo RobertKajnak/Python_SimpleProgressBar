@@ -43,9 +43,9 @@ for i in range(1,n):
       - anyting else => silent
 	 You can use pb.playTune() to check out what tune sounds like
   - **emoji** -- The type of emoji that will be displayed  
-         - 'ascii' - to be sure it works on older consoles
-         - **'kao'**   - full faces using UTF-8 characters
-         - 'off'   - less emotional, more professional
+       - 'ascii' - to be sure it works on older consoles
+       - **'kao'**   - full faces using UTF-8 characters
+       - 'off'   - less emotional, more professional
   - **skipPercent** The pecentage that are displayed. Takes priority over time estimate
      - **1**   -> display every percentage
      - 10  -> display 10%,20%...
