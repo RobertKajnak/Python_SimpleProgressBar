@@ -15,8 +15,9 @@ for i in range(1,n):
     pb.CheckProgress()
     [do complicated stuff]
  ```
-*You can also run the file itself to see a short demo*
-  
+*You can also run the file itself to see a short demo*  
+ It will look something like this:  
+![alt Text](https://i.imgur.com/l65DaXQ.gif)
   
   
  ## The default configuration:  
