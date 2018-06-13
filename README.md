@@ -6,11 +6,11 @@ I got tired of people not including progress tracking metrics
 
 ## Usage example
 ```
-import ProgressBar as ProgressBar
+import ProgressBar as PB
 
 [...]  
 
-pb = ProgressBar(n)
+pb = PB.ProgressBar(n)
 for i in range(1,n):
     pb.CheckProgress()
     [do complicated stuff]
