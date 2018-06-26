@@ -17,12 +17,11 @@ for i in range(1,n):
  ```
 *You can also run the file itself to see a short demo*  
  It will look something like this:  
-![alt Text](https://i.imgur.com/l65DaXQ.gif)
+![alt Text](https://i.imgur.com/x8VRPvv.gif)
   
   
  ## The default configuration:  
- print the percentage at most every 2 seconds  
- print the time estimation at most every 10 seconds  
+ print the percentage at most every two seconds (if an iteration is longer than two seconds, it is not possible to print every 2 seconds, obviously)
 
  ## Summary of parameters on class instantiation
   ### Required  
@@ -47,12 +46,10 @@ for i in range(1,n):
        - 'ascii' - to be sure it works on older consoles
        - **'kao'**   - full faces using UTF-8 characters
        - 'off'   - less emotional, more professional
-  - **skipPercent** The pecentage that are displayed. Takes priority over time estimate
-     - **1**   -> display every percentage
-     - 10  -> display 10%,20%...
+
  
- ## Documentation  
- Standard python documentation has been included for the class and functions  
+## Documentation  
+Standard python documentation has been included for the class and functions  
 To check the details about the parameters use  
 ```
 #Check class parameters
