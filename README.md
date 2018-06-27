@@ -16,7 +16,7 @@ for i in range(1,n):
     [do complicated stuff]
  ```
 *You can also run the file itself to see a short demo*  
- It will look something like this:  
+ It will look something like this (and it will make a sound at the end. It can be disabled):  
 ![alt Text](https://i.imgur.com/x8VRPvv.gif)
   
   
@@ -28,20 +28,20 @@ for i in range(1,n):
   - **totalIterationCount** The total number of expected iterations
   ### Optional
   - **displayInterval** The minumum amount of time between two print statements. Expressed in seconds. Default = **2**. If 1% of the works takes 0.2 seconds to complete, then 1%,6%,11% etc. will be printed
-  - **sound** Play a sound when 100% is reached. **ONLY works on MS Windows** Support for other OSs may be coming in future versions
+  - **sound** Play a sound when 100% is reached. **Reqiures numpy**. Should work on most versions of Windows, Linux and Mac. Earlier versions than Windows 7 may experience choppy sound. If the sound driver is not loaded properly, the sound section is ignored
      - 'off'  - no sound played
      - 'bip'   - a short beep
      - 'bup'   - a short beep, two octaves lower than bip
      - 'beep'  - a longer beep
      - 'micro' - microwave style beep-beep-beep
-     - 'tune'  - a melody ('Kicsi kutya tarka')
+     - 'tune'  - a melody ([HU]'Kicsi kutya tarka')
      - **'auto'**    - Selects sound based on estimated task duration at 1%:
          - \<30s       =\> bip  
          - \[30s,2min)  =\> beep  
          - \[2min,8min) =\> micro  
          - \>=8min     =\> tune  
       - anyting else => silent
-	 You can use pb.playTune() to check out what tune sounds like
+	 *You can use pb.playTune() to check out what tune sounds like*
   - **emoji** -- The type of emoji that will be displayed  
        - 'ascii' - to be sure it works on older consoles
        - **'kao'**   - full faces using UTF-8 characters

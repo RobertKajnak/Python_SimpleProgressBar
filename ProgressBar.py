@@ -16,13 +16,16 @@ class ProgressBar:
     
     displayInterval -- the minumum amount of time between two print
             statements. Expressed in seconds
-    sound -- Play a sound when 100% is reached. **ONLY works on MS Windows**
+    sound -- Play a sound when 100% is reached. REQUIRES NUMPY. Should work on most versions 
+                of Windows, Linux and Mac. Earlier versions than Windows 7 may 
+                experience choppy sound. If the sound driver is not loaded properly,
+                the sound section is ignored
             'off'   - no sound played
             'bip'   - a short beep
             'bup'   - a short beep, two octaves lower than bip
             'beep'  - a longer beep
             'micro' - microwave style beep-beep-beep
-            'tune'  - a melody ('Kicsi kutya tarka')
+            'tune'  - a melody ([HU]'Kicsi kutya tarka')
             'auto'  - Selects sound based on estimated task duration at 1%:
                         <30s       => bip
                         [30s,2min) => beep
@@ -37,12 +40,126 @@ class ProgressBar:
             1   -> display every percentage
             10  -> display 10%,20%...
             '''
+            
+    class _with_file_creation:
+        def __init__(self,np,wave,os,player):
+            self.player = player
+            self.np = np
+            self.wave=wave
+            self.os=os
+            self.samplerate = 44100
+            self.samplewidth = 2 #16 bits, therefore 2 bytes
+            self.channels = 1 #mono is fine for now
+            self.amplitude = (2**15)*0.79432
+            self.samples_offset = 0
+            self.raw_audio = None
+        def create(self,frequency,duration):
+            ''' Creates a 16-bit wav file containing the melody specified.
+            _play_stop_with_file_creation needs to be called to play the file and
+            delete it after playing has finished        
+            '''        
+    
+            #TODO: considering the usage, this should be converted into a class of its own
+            duration *= self.samplewidth/1000.0
+            
+            samples = int(self.samplerate*duration)
+            samples = samples-int(samples%(float(self.samplerate)/frequency))
+                        
+            
+            if self.raw_audio is None:
+                self.raw_audio = self.np.empty(samples,dtype=self.np.int16)
+            else:
+                self.raw_audio = self.np.resize(self.raw_audio,(self.samples_offset+samples,1))
+                
+            for i in range(samples):
+                self.raw_audio[self.samples_offset+i]= self.amplitude*self.np.sin(self.np.pi*2*frequency*i/self.samplerate)
+                
+            self.samples_offset += samples
+    
+        def play(self, remove_raw_audio=True,remove_created_file=True):
+            '''plays the file created and deletes it after playback has finished
+            '''
+            filename = '__temp_success_tune.wav';
+            g = self.wave.open(filename,'wb')
+            
+#            g.setnchannels(self.channels)
+#            g.setsampwidth(self.samplewidth)
+#            g.setframerate(self.samplerate)
+#            g.setnframes(self.samples_offset)
+            g.setparams((self.channels,self.samplewidth,self.samplerate,\
+                        self.samples_offset,'NONE','NONE'))
+            #TODO: there appears to be a bug in the wave library where the length 
+            #of data written is divided by the sample_width
+            g.writeframes(self.np.resize(self.raw_audio,(self.samples_offset*2,1)))
+            g.close()
+#            import matplotlib.pyplot as plt
+#            plt.figure(figsize=(50,1),dpi=200)
+#            plt.plot(self.raw_audio)
+#            plt.show()
+            self.os.system(self.player%filename)
+    
+            if remove_raw_audio == True:
+                self.samples_offset = 0
+                self.raw_audio = None
+    
+            if remove_created_file == True:
+                self.os.remove(filename)
+
+
+            
     try:
-        import winsound
-        def _play_freq(self,freq,duration): self.winsound.Beep(freq,duration)
-        isSound = True;
-    except:
-        isSound= False;
+        #TODO: remove numpy dependency
+        import numpy as np
+        import wave
+        import os
+        import platform
+        if platform.system() == 'Windows':
+            #TODO: do a filecheck instead
+            if int(platform.release())>=7:
+                _player = 'powershell -c (New-Object Media.SoundPlayer \'%s\').PlaySync();'
+            else:
+                try:
+                    import winsound
+                    _player = 'winsound'
+                    isSound = True;
+                except:
+                    raise SystemError('Windows OS detected, but no player or winsound')
+        elif platform.system() == 'Darwin':
+            _player = 'afplay %s'
+        elif platform.system() == 'Linux':
+            _player = 'aplay %s'
+        else:
+            raise SystemError('Operating system not recognized')
+        
+        #it is much better to not have sound, than to crash the rest of the code,
+        #thus the try-chatches within the definitions
+        if _player == 'winsound':
+            def _play_freq(self,freq,duration): 
+                try: 
+                    self._play_with_winsound(freq,duration) 
+                except: 
+                    pass
+            def _play_stop(self): return   
+        else: 
+            _player_with_file_creation = _with_file_creation(np,wave,os,_player)
+            def _play_freq(self,freq,duration): 
+                try: 
+                    self._player_with_file_creation.create(freq,duration) 
+                except: 
+                    pass
+            def _play_stop(self): 
+                try: 
+                    self._player_with_file_creation.play() 
+                except: 
+                    pass
+
+        del np
+        del wave
+        del os
+        del platform            
+        isSound = True
+    except:            
+        isSound= False
         
     valid_sounds = ['bip','bup','beep','micro','tune','auto']
     emojis={'ascii':[':(',':|',':)',':D','\m/(^.^)\m/'],
@@ -111,6 +228,62 @@ class ProgressBar:
                 self._set_best_sound(t_now-self.t_start);
             self.playTune()
             
+    def playTune(self):
+        ''' If you want to check the tune currently set'''
+    
+        #If sound is not supported or not requested
+        if not self.isSound or self.sound not in self.valid_sounds:
+            return;
+        
+        if self.sound=='bip':
+            self._play([(9,1)],6,160) #A_6
+        if self.sound=='bup':   
+            self._play([(9,1)],4,160) #A_4
+        if self.sound=='beep':
+            self._play([(9,1)],6,tempo=65);
+        if self.sound=='micro':
+            self._play([(9,2),(0,1),(9,2),(0,1),(9,2)],6,100)
+        if self.sound=='tune':
+            self._play([('c',1),('e',1),('c',1),('e',1),('g',2),('g',2),
+                        ('c',1),('e',1),('c',1),('e',1),('g',2),('g',2),
+                        (13, 1),('b',1),('a',1),('g',1),('f',2),('a',2),
+                        ('g',1),('f',1),('e',1),('d',1),('c',2),('c',2)]
+                ,tempo=180)
+        if self.sound=='tune2':
+            self._play([('c#',2),('f#',1),('a',2),('f#',1),('f',2),
+                        ('f#',1),('g#',1/4.0),('f#',2),
+                        ('d',2),('e',1/4.0),('f#',1/4.0),('c#',2),
+                        ('b3',0.25),('a3',0.25),('a3',0.25),('g#3',0.25),('g#3',0.75),
+                        ('c#',0.5),('f#3',2)                        
+                        ],tempo=120)
+        return
+
+
+    '''Private:'''
+    #Printing:
+    def _generate_time_string(self,time,seconds_format='%d'):
+        '''format it into a h:m:s format'''
+        
+        time_string = (seconds_format+' second')%(time%60)
+        if int(time)!=1:
+            time_string = time_string + 's';
+            
+        if time%3600 >= 60:
+            if time%3600 < 120:
+                time_string ='%d minunte '%((time/60)%60) \
+                                    + time_string
+            else:
+                time_string ='%d minuntes '%((time/60)%60) \
+                                    + time_string              
+        if time>=3600:
+            if time<7200:
+                time_string = '%d hour '%(time/3600)  \
+                                    + time_string
+            else:
+                time_string = '%d hours '%(time/3600)  \
+                                    + time_string
+        return time_string
+        
     def _erase_prev_output(self):
         for i in range(1,50):
             print('\b \b',end='')
@@ -134,6 +307,7 @@ class ProgressBar:
         else:           #tune
             self.sound = self.valid_sounds[4]
 
+    #Sounds
     def _play(self,sheet,octave=4,tempo=80):
         ''' Plays the "sheet music" provided at a certain tempo
         
@@ -164,78 +338,40 @@ class ProgressBar:
                     octave = octave_base
                     note_lit = note[0]
                 note = (notes[note_lit.upper()],note[1])
-            duration = int(note[1]*1000*60/tempo);
+            duration = int(note[1]*1000*60/tempo/4);
             if note[0]==0:
-                time.sleep(duration/1000.0)
+                self._play_freq(0,duration)
             else:
                 self._play_freq(int(2**((octave*12+note[0]-58)/12.0)*440),
                               duration)    
-    
-
-    def playTune(self):
-        ''' If you want to check the tune currently set'''
-    
-        #If sound is not supported or not requested
-        if not self.isSound or self.sound not in self.valid_sounds:
-            return;
+        #this allows for system independent approach: If the system requires all
+        #all notes to be queued first, than start playing, this should be called
+        #at the end. Otherwise it is filled with a return and is a dummy
+        self._play_stop()
         
-        if self.sound=='bip':
-            self._play([(9,1)],6,160) #A_6
-        if self.sound=='bup':   
-            self._play([(9,1)],4,160) #A_4
-        if self.sound=='beep':
-            self._play([(9,1)],6,tempo=65);
-        if self.sound=='micro':
-            self._play([(9,1),(0,1/2),(9,1),(0,1/2),(9,1)],6,63)
-        if self.sound=='tune':
-            self._play([('c',1),('e',1),('c',1),('e',1),('g',2),('g',2),
-                        ('c',1),('e',1),('c',1),('e',1),('g',2),('g',2),
-                        (13, 1),('b',1),('a',1),('g',1),('f',2),('a',2),
-                        ('g',1),('f',1),('e',1),('d',1),('c',2),('c',2)]
-                ,tempo=200)
-        if self.sound=='tune2':
-            self._play([('c#',2),('f#',1),('a',2),('f#',1),('f',2),
-                        ('f#',1),('g#',1/4.0),('f#',2),
-                        ('d',2),('e',1/4.0),('f#',1/4.0),('c#',2),
-                        ('b3',0.25),('a3',0.25),('a3',0.25),('g#3',0.25),('g#3',0.75),
-                        ('c#',0.5),('f#3',2)                        
-                        ],tempo=240)
-        return
-
-
-    '''Private:'''
-    def _generate_time_string(self,time,seconds_format='%d'):
-        '''format it into a h:m:s format'''
         
-        time_string = (seconds_format+' second')%(time%60)
-        if int(time)!=1:
-            time_string = time_string + 's';
-            
-        if time%3600 >= 60:
-            if time%3600 < 120:
-                time_string ='%d minunte '%((time/60)%60) \
-                                    + time_string
-            else:
-                time_string ='%d minuntes '%((time/60)%60) \
-                                    + time_string              
-        if time>=3600:
-            if time<7200:
-                time_string = '%d hour '%(time/3600)  \
-                                    + time_string
-            else:
-                time_string = '%d hours '%(time/3600)  \
-                                    + time_string
-        return time_string
+    def _play_with_winsound(self,frequency,duration):
+        '''Uses the windound module to play the frequencies specified
+        If the playback sound choppy try _play_with_file_creation
+        
+        frequencies below 37 are not supported. These are considered rest a.k.a.
+        silence
+        '''
+        if frequency >37:
+            self.winsound.Beep(frequency,duration)
+        else:
+            time.sleep(duration/1000.0)
 
 if __name__ == "__main__":
     
     #number of iterations    
-    n = 33;
+    n = 3300;
     
     #tune the length of the fake work -- stand-in for 'sleep'
-    m = 10000000;
+    m = 30000;
     #using default parameters
-    pb = ProgressBar(n);
+    #pb = ProgressBar(n,sound='tune');
+    pb = ProgressBar(n)    
     for i in range(1,n):
         pb.checkProgress();
         
