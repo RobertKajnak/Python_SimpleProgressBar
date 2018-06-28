@@ -39,133 +39,14 @@ class ProgressBar:
             'off'   - less emotional, more professional
             1   -> display every percentage
             10  -> display 10%,20%...
-            '''
-            
-    class _with_file_creation:
-        def __init__(self,np,wave,os,player):
-            self.player = player
-            self.np = np
-            self.wave=wave
-            self.os=os
-            self.samplerate = 44100
-            self.samplewidth = 2 #16 bits, therefore 2 bytes
-            self.channels = 1 #mono is fine for now
-            self.amplitude = (2**15)*0.79432
-            self.samples_offset = 0
-            self.raw_audio = None
-        def create(self,frequency,duration):
-            ''' Creates a 16-bit wav file containing the melody specified.
-            _play_stop_with_file_creation needs to be called to play the file and
-            delete it after playing has finished        
-            '''        
     
-            #TODO: considering the usage, this should be converted into a class of its own
-            duration *= self.samplewidth/1000.0
-            
-            samples = int(self.samplerate*duration)
-            samples = samples-int(samples%(float(self.samplerate)/frequency))
-                        
-            
-            if self.raw_audio is None:
-                self.raw_audio = self.np.empty(samples,dtype=self.np.int16)
-            else:
-                self.raw_audio = self.np.resize(self.raw_audio,(self.samples_offset+samples,1))
-                
-            for i in range(samples):
-                self.raw_audio[self.samples_offset+i]= self.amplitude*self.np.sin(self.np.pi*2*frequency*i/self.samplerate)
-                
-            self.samples_offset += samples
-    
-        def play(self, remove_raw_audio=True,remove_created_file=True):
-            '''plays the file created and deletes it after playback has finished
-            '''
-            filename = '__temp_success_tune.wav';
-            g = self.wave.open(filename,'wb')
-            
-#            g.setnchannels(self.channels)
-#            g.setsampwidth(self.samplewidth)
-#            g.setframerate(self.samplerate)
-#            g.setnframes(self.samples_offset)
-            g.setparams((self.channels,self.samplewidth,self.samplerate,\
-                        self.samples_offset,'NONE','NONE'))
-            #TODO: there appears to be a bug in the wave library where the length 
-            #of data written is divided by the sample_width
-            g.writeframes(self.np.resize(self.raw_audio,(self.samples_offset*2,1)))
-            g.close()
-#            import matplotlib.pyplot as plt
-#            plt.figure(figsize=(50,1),dpi=200)
-#            plt.plot(self.raw_audio)
-#            plt.show()
-            self.os.system(self.player%filename)
-    
-            if remove_raw_audio == True:
-                self.samples_offset = 0
-                self.raw_audio = None
-    
-            if remove_created_file == True:
-                self.os.remove(filename)
-
-
-            
-    try:
-        #TODO: remove numpy dependency
-        import numpy as np
-        import wave
-        import os
-        import platform
-        if platform.system() == 'Windows':
-            #TODO: do a filecheck instead
-            if int(platform.release())>=7:
-                _player = 'powershell -c (New-Object Media.SoundPlayer \'%s\').PlaySync();'
-            else:
-                try:
-                    import winsound
-                    _player = 'winsound'
-                    isSound = True;
-                except:
-                    raise SystemError('Windows OS detected, but no player or winsound')
-        elif platform.system() == 'Darwin':
-            _player = 'afplay %s'
-        elif platform.system() == 'Linux':
-            _player = 'aplay %s'
-        else:
-            raise SystemError('Operating system not recognized')
-        
-        #it is much better to not have sound, than to crash the rest of the code,
-        #thus the try-chatches within the definitions
-        if _player == 'winsound':
-            def _play_freq(self,freq,duration): 
-                try: 
-                    self._play_with_winsound(freq,duration) 
-                except: 
-                    pass
-            def _play_stop(self): return   
-        else: 
-            _player_with_file_creation = _with_file_creation(np,wave,os,_player)
-            def _play_freq(self,freq,duration): 
-                try: 
-                    self._player_with_file_creation.create(freq,duration) 
-                except: 
-                    pass
-            def _play_stop(self): 
-                try: 
-                    self._player_with_file_creation.play() 
-                except: 
-                    pass
-
-        del np
-        del wave
-        del os
-        del platform            
-        isSound = True
-    except:            
-        isSound= False
-        
+    '''
+    #%% 'Constants'
     valid_sounds = ['bip','bup','beep','micro','tune','auto']
     emojis={'ascii':[':(',':|',':)',':D','\m/(^.^)\m/'],
             'kao':['(╯_╰)',	'(￣.￣)','(─‿‿─)','＼(￣▽￣)／','☆*:.｡o(≧▽≦)o｡.:*☆']}
-    
-    
+            
+    #%% 'Public' functions
     def __init__(self,totalIterationCount, displayInterval=2,
                       sound='auto', emoji='kao'):
 
@@ -259,8 +140,7 @@ class ProgressBar:
         return
 
 
-    '''Private:'''
-    #Printing:
+    #%% 'Private' Functions: print related
     def _generate_time_string(self,time,seconds_format='%d'):
         '''format it into a h:m:s format'''
         
@@ -285,24 +165,42 @@ class ProgressBar:
         return time_string
         
     def _erase_prev_output(self):
-        for i in range(1,50):
+        '''Erases previous output from the same line using \\b special character
+        '''
+        #If the hour is displayed as well, it can get up to 75 chars. 
+        #An other 25 for good measure. Also, I don't know why it doesn't work,
+        #if I only use '\b', it only prints if there is at least one, I presume,
+        #non-escaped character
+        for i in range(1,100):
             print('\b \b',end='')
             
     def _print_emoji(self,currentPercent):
-        '''Prints the appropriate emoji for the percentage'''
+        '''Prints the appropriate emoji for the percentage
+
+        Takes the first four based on int(currentPercent/25) plus the last one 
+        on completion        
+        '''
         if self.emoji in self.emojis:
             if int(currentPercent)!=100:
                 print(self.emojis[self.emoji][int(currentPercent/25)],end='')
             else:
                 print(self.emojis[self.emoji][-1],end='')
 
+    #%% 'Private' Functions: sound related
     def _set_best_sound(self,ahead):
-        '''Selects appropriate sound profile based on remaining time'''
+        '''Selects appropriate sound profile based on remaining time
+        
+        Current time-table (puns FTW):
+        0-30sec - bip
+        30-120sec - beep
+        2-8min - micro
+        >8min - tune
+        Planning to add a tune2 for >30mins'''
         if ahead<30: #bip
             self.sound = self.valid_sounds[0]
         elif ahead<120: #beep
             self.sound = self.valid_sounds[2]
-        elif ahead<480: #micro
+        elif ahead<640: #micro
             self.sound = self.valid_sounds[3]
         else:           #tune
             self.sound = self.valid_sounds[4]
@@ -349,7 +247,8 @@ class ProgressBar:
         #at the end. Otherwise it is filled with a return and is a dummy
         self._play_stop()
         
-        
+    #%% Sound engine definition. Needs to be done before OS detection, as
+    # Forward class definitions are not allowed  
     def _play_with_winsound(self,frequency,duration):
         '''Uses the windound module to play the frequencies specified
         If the playback sound choppy try _play_with_file_creation
@@ -361,17 +260,138 @@ class ProgressBar:
             self.winsound.Beep(frequency,duration)
         else:
             time.sleep(duration/1000.0)
+            
+    class _with_file_creation:
+        def __init__(self,np,wave,os,player):
+            self.player = player
+            self.np = np
+            self.wave=wave
+            self.os=os
+            self.samplerate = 44100
+            self.samplewidth = 2 #16 bits, therefore 2 bytes
+            self.channels = 1 #mono is fine for now
+            self.amplitude = (2**15)*0.79432
+            self.samples_offset = 0
+            self.raw_audio = None
+        def create(self,frequency,duration):
+            ''' Creates a 16-bit wav file containing the melody specified.
+            _play_stop_with_file_creation needs to be called to play the file and
+            delete it after playing has finished        
+            '''        
+    
+            #TODO: considering the usage, this should be converted into a class of its own
+            duration *= self.samplewidth/1000.0
+            
+            samples = int(self.samplerate*duration)
+            samples = samples-int(samples%(float(self.samplerate)/frequency))
+                        
+            
+            if self.raw_audio is None:
+                self.raw_audio = self.np.empty(samples,dtype=self.np.int16)
+            else:
+                self.raw_audio = self.np.resize(self.raw_audio,(self.samples_offset+samples,1))
+                
+            for i in range(samples):
+                self.raw_audio[self.samples_offset+i]= self.amplitude*self.np.sin(self.np.pi*2*frequency*i/self.samplerate)
+                
+            self.samples_offset += samples
+    
+        def play(self, remove_raw_audio=True,remove_created_file=True):
+            '''plays the file created and deletes it after playback has finished
+            '''
+            filename = '__temp_success_tune.wav';
+            g = self.wave.open(filename,'wb')
+            
+#            g.setnchannels(self.channels)
+#            g.setsampwidth(self.samplewidth)
+#            g.setframerate(self.samplerate)
+#            g.setnframes(self.samples_offset)
+            g.setparams((self.channels,self.samplewidth,self.samplerate,\
+                        self.samples_offset,'NONE','NONE'))
+            #TODO: there appears to be a bug in the wave library where the length 
+            #of data written is divided by the sample_width
+            g.writeframes(self.np.resize(self.raw_audio,(self.samples_offset*2,1)))
+            g.close()
+#            import matplotlib.pyplot as plt
+#            plt.figure(figsize=(50,1),dpi=200)
+#            plt.plot(self.raw_audio)
+#            plt.show()
+            self.os.system(self.player%filename)
+    
+            if remove_raw_audio == True:
+                self.samples_offset = 0
+                self.raw_audio = None
+    
+            if remove_created_file == True:
+                self.os.remove(filename)
 
+    #%% Choose best sound setting based on OS availability. E.g. The base player
+    # is 'aplay' for Linux, 'asplay' for MacOS (Darwin kernel)
+    try:
+        #TODO: remove numpy dependency
+        import numpy as np
+        import wave
+        import os
+        import platform
+        if platform.system() == 'Windows':
+            #TODO: do a filecheck instead
+            if int(platform.release())>=7:
+                _player = 'powershell -c (New-Object Media.SoundPlayer \'%s\').PlaySync();'
+            else:
+                try:
+                    import winsound
+                    _player = 'winsound'
+                    isSound = True;
+                except:
+                    raise SystemError('Windows OS detected, but no player or winsound')
+        elif platform.system() == 'Darwin':
+            _player = 'afplay %s'
+        elif platform.system() == 'Linux':
+            _player = 'aplay %s'
+        else:
+            raise SystemError('Operating system not recognized')
+        
+        #it is much better to not have sound, than to crash the rest of the code,
+        #thus the try-chatches within the definitions
+        if _player == 'winsound':
+            def _play_freq(self,freq,duration): 
+                try: 
+                    self._play_with_winsound(freq,duration) 
+                except: 
+                    pass
+            def _play_stop(self): return   
+        else: 
+            _player_with_file_creation = _with_file_creation(np,wave,os,_player)
+            def _play_freq(self,freq,duration): 
+                try: 
+                    self._player_with_file_creation.create(freq,duration) 
+                except: 
+                    pass
+            def _play_stop(self): 
+                try: 
+                    self._player_with_file_creation.play() 
+                except: 
+                    pass
+
+        del np
+        del wave
+        del os
+        del platform            
+        isSound = True
+    except:            
+        isSound= False
+    
+#%% A simple test/demo
 if __name__ == "__main__":
     
     #number of iterations    
     n = 3300;
     
     #tune the length of the fake work -- stand-in for 'sleep'
-    m = 30000;
+    m = 3000;
     #using default parameters
     #pb = ProgressBar(n,sound='tune');
-    pb = ProgressBar(n)    
+    pb = ProgressBar(n,sound='off')    
     for i in range(1,n):
         pb.checkProgress();
         
