@@ -11,14 +11,18 @@ import time
 
 class ProgressBar:
     ''' Initializes the progress bar. Should be called directly before the loop
+    It only requires one line of output, because it rewrites the last line, 
+    therefore please use a newline at the end of your final output.
     
     totalIterationCount -- the total number of expected iterations
     
     displayInterval -- the minumum amount of time between two print
             statements. Expressed in seconds
-    sound -- Play a sound when 100% is reached. REQUIRES NUMPY. Should work on most versions 
-                of Windows, Linux and Mac. Earlier versions than Windows 7 may 
-                experience choppy sound. If the sound driver is not loaded properly,
+    sound -- Play a sound when 100% is reached. REQUIRES NUMPY. Should work on 
+                most versions of Windows, Linux and Mac. Should work on most 
+                versions of Windows, Linux and Mac. If you do not have 
+                powershell (e.g. Win XP),you may experience choppy sound.
+                If the sound driver is not loaded properly,
                 the sound section is ignored
             'off'   - no sound played
             'bip'   - a short beep
@@ -278,11 +282,12 @@ class ProgressBar:
             _play_stop_with_file_creation needs to be called to play the file and
             delete it after playing has finished        
             '''        
-    
-            #TODO: considering the usage, this should be converted into a class of its own
+
             duration *= self.samplewidth/1000.0
             
             samples = int(self.samplerate*duration)
+            #Removes popping sounds by removing the last unfinished period from
+            #the sine wave            
             samples = samples-int(samples%(float(self.samplerate)/frequency))
                         
             
@@ -334,8 +339,8 @@ class ProgressBar:
         import os
         import platform
         if platform.system() == 'Windows':
-            #TODO: do a filecheck instead
-            if int(platform.release())>=7:
+            #Checks if powershell and Media.SoundPLayer are available
+            if os.system('powershell -c (New-Object Media.SoundPlayer)') == 0:
                 _player = 'powershell -c (New-Object Media.SoundPlayer \'%s\').PlaySync();'
             else:
                 try:
@@ -388,10 +393,10 @@ if __name__ == "__main__":
     n = 3300;
     
     #tune the length of the fake work -- stand-in for 'sleep'
-    m = 3000;
+    m = 30000;
     #using default parameters
     #pb = ProgressBar(n,sound='tune');
-    pb = ProgressBar(n,sound='off')    
+    pb = ProgressBar(n)    
     for i in range(1,n):
         pb.checkProgress();
         

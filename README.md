@@ -18,7 +18,9 @@ for i in range(1,n):
 *You can also run the file itself to see a short demo*  
  It will look something like this (and it will make a sound at the end. It can be disabled):  
 ![alt Text](https://i.imgur.com/x8VRPvv.gif)
-  
+ 
+**Please note that updating the output relies on deleting the contents of the current output line. This means that if you also have other information printed out, the LAST LINE will be overwritten (so please put a newline at the end)**
+
   
  ## The default configuration:  
  print the percentage at most every two seconds (if an iteration is longer than two seconds, it is not possible to print every 2 seconds, obviously)
@@ -27,8 +29,8 @@ for i in range(1,n):
   ### Required  
   - **totalIterationCount** The total number of expected iterations
   ### Optional
-  - **displayInterval** The minumum amount of time between two print statements. Expressed in seconds. Default = **2**. If 1% of the works takes 0.2 seconds to complete, then 1%,6%,11% etc. will be printed
-  - **sound** Play a sound when 100% is reached. **Reqiures numpy**. Should work on most versions of Windows, Linux and Mac. Earlier versions than Windows 7 may experience choppy sound. If the sound driver is not loaded properly, the sound section is ignored
+  - **displayInterval** The minumum amount of time between refreshing the output. Expressed in seconds. Default = **2**.
+  - **sound** Play a sound when 100% is reached. **Reqiures numpy**. Should work on most versions of Windows, Linux and Mac. If you do not have powershell (e.g. Win XP),you may experience choppy sound. If the sound driver is not loaded properly, the sound section is ignored
      - 'off'  - no sound played
      - 'bip'   - a short beep
      - 'bup'   - a short beep, two octaves lower than bip
@@ -41,7 +43,7 @@ for i in range(1,n):
          - \[2min,8min) =\> micro  
          - \>=8min     =\> tune  
       - anyting else => silent
-	 *You can use pb.playTune() to check out what tune sounds like*
+*You can use pb.playTune() to check out what tune sounds like*
   - **emoji** -- The type of emoji that will be displayed  
        - 'ascii' - to be sure it works on older consoles
        - **'kao'**   - full faces using UTF-8 characters
