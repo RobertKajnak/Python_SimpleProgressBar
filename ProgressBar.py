@@ -49,7 +49,9 @@ class ProgressBar:
     valid_sounds = ['bip','bup','beep','micro','tune','auto']
     emojis={'ascii':[':(',':|',':)',':D','\m/(^.^)\m/'],
             'kao':['(╯_╰)',	'(￣.￣)','(─‿‿─)','＼(￣▽￣)／','☆*:.｡o(≧▽≦)o｡.:*☆']}
-            
+    #if you want to modify the sound module, enabling this is probably a good 
+    #idea: exceptions will now print the stacktrace instead of remaining silent
+    debug=False            
     #%% 'Public' functions
     def __init__(self,totalIterationCount, displayInterval=2,
                       sound='auto', emoji='kao'):
@@ -340,7 +342,8 @@ class ProgressBar:
         import wave
         import os
         import platform
-        import math
+        if debug:
+            import traceback
         if platform.system() == 'Windows':
             #Checks if powershell and Media.SoundPLayer are available
             if os.system('powershell -c (New-Object Media.SoundPlayer)') == 0:
@@ -366,7 +369,8 @@ class ProgressBar:
                 try: 
                     self._play_with_winsound(freq,duration) 
                 except: 
-                    pass
+                    if self.debug: 
+                        self.traceback.print_exc()
             def _play_stop(self): return   
         else: 
             _player_with_file_creation = _with_file_creation(wave,os,_player)
@@ -374,12 +378,14 @@ class ProgressBar:
                 try: 
                     self._player_with_file_creation.create(freq,duration) 
                 except: 
-                    pass
+                    if self.debug: 
+                        self.traceback.print_exc()
             def _play_stop(self): 
                 try: 
                     self._player_with_file_creation.play() 
                 except: 
-                    pass
+                    if self.debug: 
+                        self.traceback.print_exc()
     
         del wave
         del os
@@ -387,6 +393,9 @@ class ProgressBar:
         isSound = True
     except:            
         isSound= False
+        if debug:
+            print('Exception during init :isSound set to False.')
+            traceback.print_exc()
     
 #%% A simple test/demo
 if __name__ == "__main__":
