@@ -1,4 +1,6 @@
 # A simple Progress Bar for Python
+**Works in python 2 and 3. Tested on 2.7 and 3.4**  
+
 ## Motivation behind it
 If you need a two-liner to track the progress of any application where the number of total iterations is known  
 
@@ -39,6 +41,7 @@ for i in range(1,n):
      - 'beep'  - a longer beep
      - 'micro' - microwave style beep-beep-beep
      - 'tune'  - a melody ([HU]'Kicsi kutya tarka')
+	 - 'tune2' - Hungarian Dance
      - **'auto'**    - Selects sound based on estimated task duration at 1%:
          - \<30s       =\> bip  
          - \[30s,2min)  =\> beep  

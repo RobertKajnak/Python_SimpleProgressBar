@@ -6,8 +6,8 @@ Created on Mon Jun 11 10:59:03 2018
 """
 from __future__ import print_function
 import time
-
-
+#there are some other imports inside the try block in the music section,
+#but if those fail, they should be silently ignored
 
 class ProgressBar:
     ''' Initializes the progress bar. Should be called directly before the loop
@@ -30,6 +30,7 @@ class ProgressBar:
             'beep'  - a longer beep
             'micro' - microwave style beep-beep-beep
             'tune'  - a melody ([HU]'Kicsi kutya tarka')
+            'tune2' - Hungarian Dance
             'auto'  - Selects sound based on estimated task duration at 1%:
                         <30s       => bip
                         [30s,2min) => beep
@@ -46,7 +47,7 @@ class ProgressBar:
     
     '''
     #%% 'Constants'
-    valid_sounds = ['bip','bup','beep','micro','tune','auto']
+    valid_sounds = ['bip','bup','beep','micro','tune','tune2','auto']
     emojis={'ascii':[':(',':|',':)',':D','\m/(^.^)\m/'],
             'kao':['(╯_╰)',	'(￣.￣)','(─‿‿─)','＼(￣▽￣)／','☆*:.｡o(≧▽≦)o｡.:*☆']}
     #if you want to modify the sound module, enabling this is probably a good 
@@ -72,7 +73,7 @@ class ProgressBar:
         The internal iterator is incremented automatically.
         '''
         #Use the same time across the function to avoid potential discrepancies
-        t_now = time.clock();
+        t_now = time.clock()
         
         #Set starting time        
         if self.currentIter==0:
@@ -100,7 +101,7 @@ class ProgressBar:
             #Calculate and display remaining time
             ahead = (self.n-self.currentIter)*(t_now - self.t_start) / \
                         self.currentIter
-            time_remaining_string = self._generate_time_string(ahead);
+            time_remaining_string = self._generate_time_string(ahead)
             print('Estimated time remaining: %s ' % time_remaining_string,end='')
             self._print_emoji(currentPercent)                
                 
@@ -112,7 +113,7 @@ class ProgressBar:
             print(' The process took %s '% time_it_took)
             
             if self.sound=='auto':
-                self._set_best_sound(t_now-self.t_start);
+                self._set_best_sound(t_now-self.t_start)
             self.playTune()
             
     def playTune(self):
@@ -120,29 +121,64 @@ class ProgressBar:
     
         #If sound is not supported or not requested
         if not self.isSound or self.sound not in self.valid_sounds:
-            return;
+            return
         
         if self.sound=='bip':
             self._play([(9,1)],6,160) #A_6
         if self.sound=='bup':   
             self._play([(9,1)],4,160) #A_4
         if self.sound=='beep':
-            self._play([(9,1)],6,tempo=65);
+            self._play([(9,1)],6,tempo=65)
         if self.sound=='micro':
-            self._play([(9,2),(0,1),(9,2),(0,1),(9,2)],6,100)
+            self._play([(9,2),(0,1),(9,2),(0,1),(9,2)],6,80)
         if self.sound=='tune':
             self._play([('c',1),('e',1),('c',1),('e',1),('g',2),('g',2),
                         ('c',1),('e',1),('c',1),('e',1),('g',2),('g',2),
                         (13, 1),('b',1),('a',1),('g',1),('f',2),('a',2),
                         ('g',1),('f',1),('e',1),('d',1),('c',2),('c',2)]
-                ,tempo=180)
+                ,tempo=160)
         if self.sound=='tune2':
-            self._play([('c#',2),('f#',1),('a',2),('f#',1),('f',2),
-                        ('f#',1),('g#',1/4.0),('f#',2),
-                        ('d',2),('e',1/4.0),('f#',1/4.0),('c#',2),
-                        ('b3',0.25),('a3',0.25),('a3',0.25),('g#3',0.25),('g#3',0.75),
-                        ('c#',0.5),('f#3',2)                        
-                        ],tempo=120)
+            self._play([\
+                        ('c#',3),('f#',1),('a',3),('f#',1),
+                        ('f',3),('f#',0.5),('g#',0.5),('f#',4),
+                        ('d',3),('e',0.5),('f#',0.5),('c#',4),
+                        ('b3',0.5),('a3',0.5),('a3',0.5),('g#3',0.5),('g#3',1.5),
+                        ('c#',0.5),('f#3',4),                       
+
+                        ('c#',1.5),('f#',0.5),('a',0.5),('c#5',.5),
+                        ('f#5',.5),('a5',.5),('c#6',3),('a5',1),
+                        ('g#5',3),('a5',0.5),('b5',0.5),('a5',5),
+            
+                        ('d5',.5),('e5',.5),('f#5',.5),('d5',.5),
+                        ('c#5',.5),('d5',.5),('e5',.5),('c#5',.5),
+                        ('b4',.5),('c#5',.5),('d5',.5),('b4',.5),
+                        ('a4',.5),('b4',.5),('c#5',.5),('a4',.5),
+                        ('b4',.5),('a4',.5),('a4',.5),('g#4',.5),('g#4',1.5),
+                        ('c#5',.5),('f#4',2),('a',0.125),('c#5',0.125),('f#5',0.5),
+                        (0,1.5),
+
+                        ('c#5',.5),(0,1.5),('c#5',.5),(0,1.5),('d5',3),('c#5',1),
+                        (0,1),('b',2),('bb',.5),('b',.5),('c#5',.5),('b',.5),
+                        ('bb',.5),('c#5',.5),('b',1),(0,1.5),
+
+                        ('b',.5),(0,1.5),('b',.5),(0,1.5),('c#5',3),('b',1),
+                        (0,1),('a',2),('g#',.5),('a',.5),('b',.5),('a',.5),
+                        ('g#',.5),('b',.5),('a',1),(0,1),
+
+                        ('g#',1.9),(0,0.1),('g#',2),('b',0.5),(0,1),('a',2.5) ,
+                        ('g#',3),('f#',3.5),('f',1),('f#',1),('g#',1),('f#',1),
+                        ('f',1),('g#',1),('f#',2),(0,2),
+
+                        ('f5',0.25),('g#5',0.125),('c#6',0.125),(0,2),
+                        ('c#',0.5),(0,0.25),('d#',0.5),(0,1.5),('f',0.5),(0,1.5),
+                        ('g#',0.5),('f#',0.5),(0,0.5),('f#',2),                  
+                        ('f',0.5),('f#',0.5),('g#',0.5),('f#',0.5),('f',0.5),
+                        ('f#',0.5),('g#',0.5),('f#',0.5),(0,1),
+
+                        ('b',0.25),('d5',0.125),('f#5',0.125),('g#5',0.125),(0,1.5),
+                        ('b',0.25),('c#5',0.125),('f5',0.125),('g#5',0.125),(0,1.5),
+                        ('a',0.25),('c#5',0.25),('f#5',2)
+                        ],octave=4,tempo=150)
         return
 
 
@@ -152,7 +188,7 @@ class ProgressBar:
         
         time_string = (seconds_format+' second')%(time%60)
         if int(time)!=1:
-            time_string = time_string + 's';
+            time_string = time_string + 's'
             
         if time%3600 >= 60:
             if time%3600 < 120:
@@ -200,16 +236,18 @@ class ProgressBar:
         0-30sec - bip
         30-120sec - beep
         2-8min - micro
-        >8min - tune
-        Planning to add a tune2 for >30mins'''
+        8-38min - tune
+        Planning to add a tune2 for >38mins'''
         if ahead<30: #bip
             self.sound = self.valid_sounds[0]
         elif ahead<120: #beep
             self.sound = self.valid_sounds[2]
         elif ahead<640: #micro
             self.sound = self.valid_sounds[3]
-        else:           #tune
+        elif ahead<2280:           #tune
             self.sound = self.valid_sounds[4]
+        else:
+            self.sound = self.valid_sounds[5]
 
     #Sounds
     def _play(self,sheet,octave=4,tempo=80):
@@ -241,8 +279,14 @@ class ProgressBar:
                 except:
                     octave = octave_base
                     note_lit = note[0]
-                note = (notes[note_lit.upper()],note[1])
-            duration = int(note[1]*1000*60/tempo/4);
+                try:
+                    modifier = note_lit[1]
+                    note_lit = note_lit[0].upper()
+                except:
+                    modifier = ''
+                    note_lit = note_lit.upper()                        
+                note = (notes[note_lit+modifier],note[1])
+            duration = int(note[1]*1000*60/tempo/4)
             if note[0]==0:
                 self._play_freq(0,duration)
             else:
@@ -271,14 +315,14 @@ class ProgressBar:
         import math
         from array import array
         import sys
-        def __init__(self,wave,os,player):
+        import wave
+        def __init__(self,os,player):
             self.player = player
-            self.wave=wave
             self.os=os
             self.samplerate = 44100
             self.samplewidth = 2 #16 bits, therefore 2 bytes
             self.channels = 1 #mono is fine for now
-            self.amplitude = (2**15)*0.79432
+            self.amplitude = int((2**15)*0.708)
             self.samples_offset = 0
             self.raw_audio = None
         def create(self,frequency,duration):
@@ -292,9 +336,9 @@ class ProgressBar:
             samples = int(self.samplerate*duration)
             #Removes popping sounds by removing the last unfinished period from
             #the sine wave            
-            samples = samples-int(samples%(float(self.samplerate)/frequency))
+            if frequency > 1:
+                samples = samples-int(samples%(float(self.samplerate)/frequency))
                         
-            
             if self.raw_audio is None:
                 # 'h' = singed short (2B)
                 self.raw_audio = self.array('h',[0])*samples
@@ -302,34 +346,44 @@ class ProgressBar:
                 self.raw_audio += self.array('h',[0])*samples
                 
             for i in range(samples):
-                self.raw_audio[self.samples_offset+i]= int(self.amplitude*self.math.sin(self.math.pi*2*frequency*i/self.samplerate))
+                self.raw_audio[self.samples_offset+i]= int(self.amplitude*\
+                    self.math.sin(self.math.pi*2*frequency*i/self.samplerate))
+                
+            #reduce popping even further and add a small pause between notes
+            lim = int(min(0.02*self.samplerate,samples/3))
+            #The linear approach seems to be better with pop reduction
+            for i in range(lim):
+                #exponential approach: e^(-t/(lim/4))
+#                self.raw_audio[-lim+i] = int(self.raw_audio[-lim+i]*\
+#                        (self.math.exp(-1.0*i/(lim/4))))
+#                self.raw_audio[self.samples_offset+lim-i-1] = \
+#                        int(self.raw_audio[self.samples_offset+lim-i-1]*\
+#                        (self.math.exp(-1.0*i/(lim/4))))
+                #linear appraoch:
+                self.raw_audio[-i-1] = int(self.raw_audio[-i-1]*1.0*i/lim)
+                self.raw_audio[self.samples_offset+i] = int(self.raw_audio[self.samples_offset+i]*1.0*i/lim)
                 
             self.samples_offset += samples
     
         def play(self, remove_raw_audio=True,remove_created_file=True):
             '''plays the file created and deletes it after playback has finished
             '''
-            filename = '__temp_success_tune.wav';
+            filename = '__temp_success_tune.wav'
             g = self.wave.open(filename,'wb')
             
-#            g.setnchannels(self.channels)
-#            g.setsampwidth(self.samplewidth)
-#            g.setframerate(self.samplerate)
-#            g.setnframes(self.samples_offset)
-            g.setparams((self.channels,self.samplewidth,self.samplerate,\
-                        self.samples_offset,'NONE','NONE'))
-            #TODO: there appears to be a bug in the wave library where the length 
-            #of data written is divided by the sample_width
+            g.setnchannels(self.channels)
+            g.setsampwidth(self.samplewidth)
+            g.setframerate(self.samplerate)
+            g.setnframes(self.samples_offset)
             if self.sys.version_info<(3,0):
+                #In python2 there is a bug in the wave library where the length 
+                #of data written is divided by the sample_width, that was fixed in
+                #python3
                 g.writeframes(self.raw_audio*2)                    
             else:
                 g.writeframes(self.raw_audio)
             g.close()
-            #If you want to check out the waveform
-#            import matplotlib.pyplot as plt
-#            plt.figure(figsize=(50,1),dpi=200)
-#            plt.plot(self.raw_audio)
-#            plt.show()
+
             self.os.system(self.player%filename)
     
             if remove_raw_audio == True:
@@ -342,7 +396,6 @@ class ProgressBar:
     #%% Choose best sound setting based on OS availability. E.g. The base player
     # is 'aplay' for Linux, 'asplay' for MacOS (Darwin kernel)
     try:
-        import wave
         import os
         import platform
         if debug:
@@ -355,7 +408,7 @@ class ProgressBar:
                 try:
                     import winsound
                     _player = 'winsound'
-                    isSound = True;
+                    isSound = True
                 except:
                     raise SystemError('Windows OS detected, but no player or winsound')
         elif platform.system() == 'Darwin':
@@ -376,7 +429,7 @@ class ProgressBar:
                         self.traceback.print_exc()
             def _play_stop(self): return   
         else: 
-            _player_with_file_creation = _with_file_creation(wave,os,_player)
+            _player_with_file_creation = _with_file_creation(os,_player)
             def _play_freq(self,freq,duration): 
                 try: 
                     self._player_with_file_creation.create(freq,duration) 
@@ -390,7 +443,6 @@ class ProgressBar:
                     if self.debug: 
                         self.traceback.print_exc()
     
-        del wave
         del os
         del platform            
         isSound = True
@@ -404,17 +456,16 @@ class ProgressBar:
 if __name__ == "__main__":
     
     #number of iterations    
-    n = 3300;
-    
+    n = 3300
     #tune the length of the fake work -- stand-in for 'sleep'
-    m = 30000;
-    #using default parameters
-    pb = ProgressBar(n,sound='tune');
-    #pb = ProgressBar(n)    
+    m = 40000
+    
+    #pb = ProgressBar(n,sound='tune2')
+    pb = ProgressBar(n)    
     for i in range(1,n):
-        pb.checkProgress();
+        pb.checkProgress()
         
-        k=0;
+        k=0
         for j in range(1,m):
-            k=k+1;
+            k=k+1
         
