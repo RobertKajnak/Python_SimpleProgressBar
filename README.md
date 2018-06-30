@@ -4,6 +4,8 @@ If you need a two-liner to track the progress of any application where the numbe
 
 I got tired of people not including progress tracking metrics  
 
+For the sound part, I was curious what I could do in python without relying on any non-standard library 
+
 ## Usage example
 ```
 import ProgressBar as PB

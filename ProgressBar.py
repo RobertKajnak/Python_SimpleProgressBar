@@ -270,6 +270,7 @@ class ProgressBar:
     class _with_file_creation:
         import math
         from array import array
+        import sys
         def __init__(self,wave,os,player):
             self.player = player
             self.wave=wave
@@ -319,8 +320,10 @@ class ProgressBar:
                         self.samples_offset,'NONE','NONE'))
             #TODO: there appears to be a bug in the wave library where the length 
             #of data written is divided by the sample_width
-
-            g.writeframes(self.raw_audio*2)                    
+            if self.sys.version_info<(3,0):
+                g.writeframes(self.raw_audio*2)                    
+            else:
+                g.writeframes(self.raw_audio)
             g.close()
             #If you want to check out the waveform
 #            import matplotlib.pyplot as plt
@@ -362,7 +365,7 @@ class ProgressBar:
         else:
             raise SystemError('Operating system not recognized')
         
-        #it is much better to not have sound, than to crash the rest of the code,
+        #it is much better to not have sound than to crash the rest of the code,
         #thus the try-chatches within the definitions
         if _player == 'winsound':
             def _play_freq(self,freq,duration): 
@@ -406,8 +409,8 @@ if __name__ == "__main__":
     #tune the length of the fake work -- stand-in for 'sleep'
     m = 30000;
     #using default parameters
-    #pb = ProgressBar(n,sound='tune');
-    pb = ProgressBar(n)    
+    pb = ProgressBar(n,sound='tune');
+    #pb = ProgressBar(n)    
     for i in range(1,n):
         pb.checkProgress();
         
