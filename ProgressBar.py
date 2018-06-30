@@ -18,7 +18,7 @@ class ProgressBar:
     
     displayInterval -- the minumum amount of time between two print
             statements. Expressed in seconds
-    sound -- Play a sound when 100% is reached. REQUIRES NUMPY. Should work on 
+    sound -- Play a sound when 100% is reached. Should work on 
                 most versions of Windows, Linux and Mac. Should work on most 
                 versions of Windows, Linux and Mac. If you do not have 
                 powershell (e.g. Win XP),you may experience choppy sound.
@@ -266,9 +266,10 @@ class ProgressBar:
             time.sleep(duration/1000.0)
             
     class _with_file_creation:
-        def __init__(self,np,wave,os,player):
+        import math
+        from array import array
+        def __init__(self,wave,os,player):
             self.player = player
-            self.np = np
             self.wave=wave
             self.os=os
             self.samplerate = 44100
@@ -292,12 +293,13 @@ class ProgressBar:
                         
             
             if self.raw_audio is None:
-                self.raw_audio = self.np.empty(samples,dtype=self.np.int16)
+                # 'h' = singed short (2B)
+                self.raw_audio = self.array('h',[0])*samples
             else:
-                self.raw_audio = self.np.resize(self.raw_audio,(self.samples_offset+samples,1))
+                self.raw_audio += self.array('h',[0])*samples
                 
             for i in range(samples):
-                self.raw_audio[self.samples_offset+i]= self.amplitude*self.np.sin(self.np.pi*2*frequency*i/self.samplerate)
+                self.raw_audio[self.samples_offset+i]= int(self.amplitude*self.math.sin(self.math.pi*2*frequency*i/self.samplerate))
                 
             self.samples_offset += samples
     
@@ -315,8 +317,10 @@ class ProgressBar:
                         self.samples_offset,'NONE','NONE'))
             #TODO: there appears to be a bug in the wave library where the length 
             #of data written is divided by the sample_width
-            g.writeframes(self.np.resize(self.raw_audio,(self.samples_offset*2,1)))
+
+            g.writeframes(self.raw_audio*2)                    
             g.close()
+            #If you want to check out the waveform
 #            import matplotlib.pyplot as plt
 #            plt.figure(figsize=(50,1),dpi=200)
 #            plt.plot(self.raw_audio)
@@ -333,11 +337,10 @@ class ProgressBar:
     #%% Choose best sound setting based on OS availability. E.g. The base player
     # is 'aplay' for Linux, 'asplay' for MacOS (Darwin kernel)
     try:
-        #TODO: remove numpy dependency
-        import numpy as np
         import wave
         import os
         import platform
+        import math
         if platform.system() == 'Windows':
             #Checks if powershell and Media.SoundPLayer are available
             if os.system('powershell -c (New-Object Media.SoundPlayer)') == 0:
@@ -366,7 +369,7 @@ class ProgressBar:
                     pass
             def _play_stop(self): return   
         else: 
-            _player_with_file_creation = _with_file_creation(np,wave,os,_player)
+            _player_with_file_creation = _with_file_creation(wave,os,_player)
             def _play_freq(self,freq,duration): 
                 try: 
                     self._player_with_file_creation.create(freq,duration) 
@@ -377,8 +380,7 @@ class ProgressBar:
                     self._player_with_file_creation.play() 
                 except: 
                     pass
-
-        del np
+    
         del wave
         del os
         del platform            

@@ -30,7 +30,7 @@ for i in range(1,n):
   - **totalIterationCount** The total number of expected iterations
   ### Optional
   - **displayInterval** The minumum amount of time between refreshing the output. Expressed in seconds. Default = **2**.
-  - **sound** Play a sound when 100% is reached. **Reqiures numpy**. Should work on most versions of Windows, Linux and Mac. If you do not have powershell (e.g. Win XP),you may experience choppy sound. If the sound driver is not loaded properly, the sound section is ignored
+  - **sound** Play a sound when 100% is reached. Should work on most versions of Windows, Linux and Mac. If you do not have powershell (e.g. Win XP),you may experience choppy sound. If the sound driver is not loaded properly, the sound section is ignored
      - 'off'  - no sound played
      - 'bip'   - a short beep
      - 'bup'   - a short beep, two octaves lower than bip
