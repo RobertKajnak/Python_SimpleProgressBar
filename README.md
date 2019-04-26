@@ -16,7 +16,7 @@ import ProgressBar as PB
 
 pb = PB.ProgressBar(n)
 for i in range(1,n):
-    pb.CheckProgress()
+    pb.check_progress()
     [do complicated stuff]
  ```
 *You can also run the file itself to see a short demo*  
@@ -48,7 +48,7 @@ for i in range(1,n):
          - \[2min,8min) =\> micro  
          - \>=8min     =\> tune  
       - anyting else => silent
-	  - *You can use pb.playTune() to check out what tune sounds like*
+	  - *You can use pb.play_tune() to check out what tune sounds like*
   - **emoji** -- The type of emoji that will be displayed  
        - 'ascii' - to be sure it works on older consoles
        - **'kao'**   - full faces using UTF-8 characters
@@ -59,9 +59,9 @@ Standard python documentation has been included for the class and functions
 To check the details about the parameters use  
 ```
 #Check class parameters
-print(ProgressBar.__doc__)
+help(ProgressBar)
 
 #Check the parameters of a function
-print(ProgressBar.checkProgress.__doc__)
+help(ProgressBar.check_progress)
 ```
  

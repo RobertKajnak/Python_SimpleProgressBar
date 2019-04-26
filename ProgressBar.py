@@ -37,7 +37,7 @@ class ProgressBar:
                         [2mins,5min)=> micro
                         >=5min     => tune
             anyting else => silent
-            You can use playTune() to check out what tune sounds like
+            You can use play_tune() to check out what tune sounds like
     emoji -- The type of emoji that will be displayed
             'ascii' - to be sure it works on older consoles
             'kao'   - full faces using UTF-8 characters
@@ -67,13 +67,13 @@ class ProgressBar:
         self.sound = sound
         self.emoji = emoji
 
-    def checkProgress(self):
+    def check_progress(self):
         '''Call this function on each iteration. It only prints when necessary
         
         The internal iterator is incremented automatically.
         '''
         #Use the same time across the function to avoid potential discrepancies
-        t_now = time.clock()
+        t_now = time.perf_counter()
         
         #Set starting time        
         if self.currentIter==0:
@@ -114,9 +114,9 @@ class ProgressBar:
             
             if self.sound=='auto':
                 self._set_best_sound(t_now-self.t_start)
-            self.playTune()
+            self.play_tune()
             
-    def playTune(self):
+    def play_tune(self):
         ''' If you want to check the tune currently set'''
     
         #If sound is not supported or not requested
@@ -463,7 +463,7 @@ if __name__ == "__main__":
     #pb = ProgressBar(n,sound='tune2')
     pb = ProgressBar(n)    
     for i in range(1,n):
-        pb.checkProgress()
+        pb.check_progress()
         
         k=0
         for j in range(1,m):
